@@ -10,8 +10,11 @@ OO-FeVer is an object-oriented, (modern) Fortran-based finite volume solver for 
 
 ### Dependencies
 
-* Fortran 2003 (or later) supporting compiler.
-* Python 3 (at minimum numpy and matplotlib.pyplot packages installed)
+* Fortran 2003 (or later) compiler.
+* Python 3
+    * numpy
+    * matplotlib
+* make
 
 ### Installing
 
@@ -45,9 +48,9 @@ Rachel Cooper
 
 * 0.0.1 
     * Super pre-alpha this doesn't even work, yet stage
-* 0.1
+<!-- * 0.1
     * Initial release coming eventually
-
+ -->
 ## License
 
 This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details... as soon as I set this up...
