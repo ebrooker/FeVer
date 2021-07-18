@@ -1,0 +1,61 @@
+MODULE INIT_SIMULATION_INTERFACE
+
+	IMPLICIT NONE
+
+	INTERFACE INIT_PARAMETER_GET
+
+		SUBROUTINE INIT_PARAMETER_getREAL (lines, var_str, var_name, var_defval)
+		CHARACTER(LEN=*), INTENT(IN)           :: lines(:,:), var_str
+		REAL(KIND=8), OPTIONAL, INTENT(IN)     :: var_defval
+		REAL(KIND=8), INTENT(OUT)              :: var_name
+		END SUBROUTINE INIT_PARAMETER_getREAL
+
+		SUBROUTINE INIT_PARAMETER_getINT (lines, var_str, var_name, var_defval)
+		CHARACTER(LEN=*), INTENT(IN)           :: lines(:,:), var_str
+		INTEGER(KIND=4), OPTIONAL, INTENT(IN)  :: var_defval
+		INTEGER(KIND=4), INTENT(OUT)           :: var_name
+		END SUBROUTINE INIT_PARAMETER_getINT
+
+		SUBROUTINE INIT_PARAMETER_getSTR (lines, var_str, var_name, var_defval)
+		CHARACTER(LEN=*), INTENT(IN)           :: lines(:,:), var_str
+		CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: var_defval
+		CHARACTER(LEN=*), INTENT(OUT)          :: var_name
+		END SUBROUTINE INIT_PARAMETER_getSTR
+
+		SUBROUTINE INIT_PARAMETER_getLOG (lines, var_str, var_name, var_defval)
+		CHARACTER(LEN=*), INTENT(IN)  :: lines(:,:), var_str
+		LOGICAL, OPTIONAL, INTENT(IN) :: var_defval
+		LOGICAL, INTENT(OUT)          :: var_name
+		END SUBROUTINE INIT_PARAMETER_getLOG
+
+	END INTERFACE INIT_PARAMETER_GET
+
+
+	INTERFACE INIT_DATA_FROM_FILE
+		SUBROUTINE INIT_DATA_FROM_FILE_REAL( fname, var, stat)
+	    CHARACTER(LEN=*), INTENT(IN) :: fname
+	    REAL(KIND=8),    INTENT(OUT) :: var(:)
+	    INTEGER(KIND=4), INTENT(OUT) :: stat
+	    END SUBROUTINE INIT_DATA_FROM_FILE_REAL
+
+		SUBROUTINE INIT_DATA_FROM_FILE_INT( fname, var, stat)
+	    CHARACTER(LEN=*), INTENT(IN) :: fname
+	    INTEGER(KIND=4), INTENT(OUT) :: var(:)
+	    INTEGER(KIND=4), INTENT(OUT) :: stat
+	    END SUBROUTINE INIT_DATA_FROM_FILE_INT
+
+	    SUBROUTINE INIT_DATA_FROM_FILE_STR( fname, var, stat)
+	    CHARACTER(LEN=*), INTENT(IN) :: fname
+	    CHARACTER(LEN=*), INTENT(OUT) :: var(:)
+	    INTEGER(KIND=4), INTENT(OUT) :: stat
+	    END SUBROUTINE INIT_DATA_FROM_FILE_STR
+
+		SUBROUTINE INIT_DATA_FROM_FILE_LOG( fname, var, stat)
+	    CHARACTER(LEN=*), INTENT(IN) :: fname
+	    LOGICAL,         INTENT(OUT) :: var(:)
+	    INTEGER(KIND=4), INTENT(OUT) :: stat
+	    END SUBROUTINE INIT_DATA_FROM_FILE_LOG
+
+	END INTERFACE INIT_DATA_FROM_FILE
+
+END MODULE INIT_SIMULATION_INTERFACE
