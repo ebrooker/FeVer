@@ -33,13 +33,13 @@ PRIVATE
         CHARACTER(LEN=:), ALLOCATABLE :: bc_type
 
         CONTAINS
-            PROCEDURE :: evolve  !! stub
             PROCEDURE :: init
             PROCEDURE :: init_data
             PROCEDURE :: init_grid
             PROCEDURE :: init_states
             PROCEDURE :: read_inputfile
-            PROCEDURE :: reconstruction !! stub
+            PROCEDURE :: evolve
+            PROCEDURE :: reconstruction
             PROCEDURE :: timestep
 
     END TYPE Simulation_t
@@ -73,6 +73,12 @@ PRIVATE
         END SUBROUTINE init_states
 
 
+        MODULE SUBROUTINE advect(nl,nr,area,velocity,intrfc_l,intrfc_r,flux)
+            REAL(wp), INTENT(IN   ) :: area(:), velocity(:), intrfc_l(:), intrfc_r(:)
+            REAL(wp), INTENT(INOUT) :: flux(:)
+        END SUBROUTINE advect
+
+
         MODULE SUBROUTINE boundary_conditions(values, ng, nx, bc_type)
             REAL(wp),         INTENT(INOUT) :: values(:)
             INTEGER(smInt),   INTENT(IN   ) :: ng,nx
@@ -104,8 +110,6 @@ PRIVATE
         MODULE SUBROUTINE read_inputfile(this)
             CLASS(Simulation_t) :: this
         END SUBROUTINE read_inputfile
-
-
 
     END INTERFACE
 
