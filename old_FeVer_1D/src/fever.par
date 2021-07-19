@@ -1,0 +1,63 @@
+#--------------------------------
+# DOMAIN AND EVOLUTION PARAMETERS
+
+nx_base = 8   # base resolution for convergence testing
+
+nx   = 8     # number of mesh cells
+nmax = 99999  # max number of iterations allowed
+tmax = 1.0d0  # max simulation time
+xmin = 0.0d0  # left-hand border
+xmax = 1.0d0  # right-hand border
+
+cfl  = 0.5d0  # CFL condition number
+difs = 0.00d0  # Diffusion coefficient multiplicative factor (Kappa)
+v    = 1.0d0  # Advection speed multiplicative factor
+
+# Source terms parameters
+sourceA = 0.d0
+sourceX = 0.8d0
+sourceTi = 0.d0
+sourceTf = 1.d0
+
+#--------------------------------
+# VARIOUS FLAGS FOR FUNCTIONALITY
+
+adrtestflag  = .false.     # OPTIONS: .true. to turn on adr study module, .false. to turn off
+
+convtestflag = .false.    # OPTIONS: .true. to turn on convergence study module, .false. to turn off
+
+sqpltestflag = .false.    # OPTIONS: .true. to turn on square pulse study module, .false. to turn off
+
+readflag   = .false.      # OPTIONS: .true. for read-in data files, .false. for presets with icflag
+
+icflag     = 'square_pulse'       # OPTIONS: sine,square_pulse, for initial conditions
+
+bcflag     = 'periodic'   # OPTIONS: periodic, for boundary conditions
+
+interpflag = 'ppm'        # OPTIONS: pcm,plm,ppm interpolation
+
+monoflag   = .true.       # OPTIONS: 0 for off, 1 for on, for monotonization
+
+gridflag   = 'ug'         # OPTIONS: ug for uniform grid, non-ug for non-uniform grid
+
+velflag    = 'unpos'      # OPTIONS: unpos/unneg for uniform positive/negative, expos/exneg for exponential positive/negative
+
+difsflag   = 'const'      # OPTIONS: const for constant diffusion coefficient
+
+sourceflag = 'delta'      # OPTIONS: delta for delta function source term
+
+#------------
+# INPUT FILES
+
+# only needed if readflag = .true.
+rhofn = 'ic_data/density.dat'   # file holding density data
+
+velfn = 'ic_data/velocity.dat'  # file holding velocity field data
+
+posfn = 'ic_data/position.dat'  # file holding grid position data
+
+#---------- 
+# Diffusion
+useImplicitSolve = .false.
+theta = 0.5d0  # set the balance of explicit to implicit (0 for fully explicit, 1 for fully implicit)
+

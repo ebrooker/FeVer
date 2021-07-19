@@ -1,0 +1,14 @@
+SUBROUTINE EVOLVE
+	USE GLOBALS
+
+	CALL RECONSTRUCT_HYDROSTATE ( c, cl, cr )
+
+	CALL ADVECTION_FLUXES ( c, cl, cr, f)
+
+	IF ( .not. useImplicitSolve) CALL DIFFUSION_FLUXES ( c, f )
+
+	CALL UPDATE ( f, c )
+
+	IF ( useImplicitSolve ) CALL DIFFUSION_IMPLICIT ( c )
+
+END SUBROUTINE EVOLVE
