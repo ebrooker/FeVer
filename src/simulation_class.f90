@@ -39,6 +39,7 @@ PRIVATE
             PROCEDURE :: init_states
             PROCEDURE :: read_inputfile
             PROCEDURE :: evolve
+            PROCEDURE :: advection
             PROCEDURE :: reconstruction
             PROCEDURE :: timestep
 
@@ -73,10 +74,9 @@ PRIVATE
         END SUBROUTINE init_states
 
 
-        MODULE SUBROUTINE advect(nl,nr,area,velocity,intrfc_l,intrfc_r,flux)
-            REAL(wp), INTENT(IN   ) :: area(:), velocity(:), intrfc_l(:), intrfc_r(:)
-            REAL(wp), INTENT(INOUT) :: flux(:)
-        END SUBROUTINE advect
+        MODULE SUBROUTINE advection(this)
+            CLASS(Simulation_t), INTENT(INOUT) :: this
+        END SUBROUTINE advection
 
 
         MODULE SUBROUTINE boundary_conditions(values, ng, nx, bc_type)

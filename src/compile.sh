@@ -7,8 +7,11 @@ gfortran -c global_constants.f90
 gfortran -c io_newUnit.f90
 gfortran -c entry_class.f90
 gfortran -c dictionary_class.f90 
-gfortran -c state_class.f90 
 gfortran -c grid_class.f90
+
+gfortran -c state_class.f90 
+gfortran -c state_reconstruction.f90
+gfortran -c state_advect.f90
 
 gfortran -c simulation_class.f90 
 gfortran -c simulation_advect.f90
