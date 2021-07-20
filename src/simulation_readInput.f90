@@ -3,14 +3,13 @@ SUBMODULE (simulation_class) simulation_readInput
 CONTAINS
 
     SUBROUTINE read_inputfile(this)
-        CLASS(Simulation_t)           :: this
-        INTEGER(lgInt)                :: error, io_err, io_unit, io_stat, nlines, iread
+        CLASS(Simulation_t), INTENT(INOUT) :: this
+        INTEGER(lgInt)                :: io_err, io_unit, io_stat, nlines, iread
         CHARACTER(LEN=50)             :: key,val
-        CHARACTER(LEN=1)              :: equal_string
         CHARACTER(LEN=:), ALLOCATABLE :: ikey,ival
 
         !! Use Python utility script to preprocess the parameter file for us
-        CALL SYSTEM("python ./io_setupParameterFile.py "//TRIM(this%inputFile))
+        CALL SYSTEM("python /data2/eb11d/misc/my_libs/github/FeVer/src/io_setupParameterFile.py "//TRIM(this%inputFile))
 
         OPEN(UNIT=newUnit(io_unit), FILE="parameters.fever", STATUS="OLD", ACTION="READ", IOSTAT=io_err)
 

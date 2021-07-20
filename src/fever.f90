@@ -6,9 +6,10 @@ IMPLICIT NONE
 
     TYPE(Simulation_t) :: simulation
 
-    simulation = Simulation_t("fever.inp")
+    simulation = Simulation_t("/data2/eb11d/misc/my_libs/github/FeVer/src/fever.inp")
     print*, simulation%inputfile
 
+    CALL simulation%init("/data2/eb11d/misc/my_libs/github/FeVer/src/fever.inp")
 
     CALL simulation%evolve()
 

@@ -1,0 +1,36 @@
+# Development folders
+**/dev
+**/testdir
+**/build
+
+# Fortran module files
+*.mod
+*.smod
+
+# Object files
+*.o
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Log files
+*.log
+
+# Compiled Dynamics libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static Libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

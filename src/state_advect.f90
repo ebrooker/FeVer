@@ -9,17 +9,18 @@ CONTAINS
         INTEGER(smInt) :: i
 
 
-        DO CONCURRENT (i=nl:nr+1)
+        DO CONCURRENT (i=nl:nr)
             IF ( velocity(i) > ZERO ) THEN
-                this%flux(i) = velocity(i) * area(i-1)*this%intrfc_l(i)
+                this%flux(i) = velocity(i) * area(1)*this%intrfc_l(i)
             ELSE IF ( velocity(i) < ZERO ) THEN
-                this%flux(i) = velocity(i) * area(i  )*this%intrfc_r(i)
+                this%flux(i) = velocity(i) * area(1)*this%intrfc_r(i)
             ELSE
                 this%flux(i) = HALF * &
-                        ( area(i-1)*this%intrfc_l(i) + area(i)*this%intrfc_r(i) ) * &
+                        ( area(1)*this%intrfc_l(i) + area(1)*this%intrfc_r(i) ) * &
                         ( velocity(i-1)              + velocity(i)              )
             END IF
         END DO
+        
 
     END SUBROUTINE advect
 

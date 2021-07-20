@@ -3,7 +3,7 @@ SUBMODULE (simulation_class) simulation_init
 CONTAINS
 
     SUBROUTINE init(this, inputfile)
-        CLASS(Simulation_t)            :: this
+        CLASS(Simulation_t), INTENT(INOUT) :: this
         CHARACTER(LEN=*),   INTENT(IN) :: inputfile
 
         this%inputfile = inputfile

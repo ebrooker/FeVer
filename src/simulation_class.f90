@@ -25,6 +25,7 @@ PRIVATE
         TYPE(State_t)                 :: velx
 
         INTEGER(smInt)                :: ng,nx
+        INTEGER(lgInt)                :: step=0_lgInt, MAXSTEPS = 4_lgInt
 
         REAL(wp)                      :: xmin,xmax
         REAL(wp)                      :: time=ZERO, dt=ZERO, tmax=ZERO, cfl=HALF
@@ -39,9 +40,10 @@ PRIVATE
             PROCEDURE :: init_states
             PROCEDURE :: read_inputfile
             PROCEDURE :: evolve
-            PROCEDURE :: advection
-            PROCEDURE :: reconstruction
+            ! PROCEDURE :: advection
+            ! PROCEDURE :: reconstruction
             PROCEDURE :: timestep
+            PROCEDURE :: update_state
 
     END TYPE Simulation_t
 
@@ -57,8 +59,8 @@ PRIVATE
 
 
         MODULE SUBROUTINE init(this, inputfile)
-            CLASS(Simulation_t)            :: this
-            CHARACTER(LEN=*),   INTENT(IN) :: inputfile
+            CLASS(Simulation_t), INTENT(INOUT) :: this
+            CHARACTER(LEN=*),    INTENT(IN   ) :: inputfile
         END SUBROUTINE init
 
         MODULE SUBROUTINE init_data(this)
@@ -66,17 +68,17 @@ PRIVATE
         END SUBROUTINE init_data
 
         MODULE SUBROUTINE init_grid(this)
-            CLASS(Simulation_t) :: this
+            CLASS(Simulation_t), INTENT(INOUT) :: this
         END SUBROUTINE init_grid
 
         MODULE SUBROUTINE init_states(this)
-            CLASS(Simulation_t) :: this
+            CLASS(Simulation_t), INTENT(INOUT) :: this
         END SUBROUTINE init_states
 
 
-        MODULE SUBROUTINE advection(this)
-            CLASS(Simulation_t), INTENT(INOUT) :: this
-        END SUBROUTINE advection
+        ! MODULE SUBROUTINE advection(this)
+        !     CLASS(Simulation_t), INTENT(INOUT) :: this
+        ! END SUBROUTINE advection
 
 
         MODULE SUBROUTINE boundary_conditions(values, ng, nx, bc_type)
@@ -98,17 +100,20 @@ PRIVATE
             REAL(wp),       INTENT(INOUT) :: state_vals(:)
         END SUBROUTINE put
 
-        MODULE SUBROUTINE reconstruction(this)
-            CLASS(Simulation_t), INTENT(INOUT) :: this
-        END SUBROUTINE
+        ! MODULE SUBROUTINE reconstruction(this)
+        !     CLASS(Simulation_t), INTENT(INOUT) :: this
+        ! END SUBROUTINE reconstruction
 
         MODULE SUBROUTINE timestep(this)
             CLASS(Simulation_t), INTENT(INOUT) :: this
         END SUBROUTINE timestep
 
+        MODULE SUBROUTINE update_state(this)
+            CLASS(Simulation_t), INTENT(INOUT) :: this
+        END SUBROUTINE update_state
 
         MODULE SUBROUTINE read_inputfile(this)
-            CLASS(Simulation_t) :: this
+            CLASS(Simulation_t), INTENT(INOUT) :: this
         END SUBROUTINE read_inputfile
 
     END INTERFACE

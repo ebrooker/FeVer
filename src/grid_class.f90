@@ -58,9 +58,9 @@ CONTAINS
         ALLOCATE(this%vol (this%nx        ), source=ZERO)
 
         this%dx   = (this%xmax-this%xmin) / real(this%nx, kind=wp)
-        this%xi   = [ (this%xmin + i*this%dx(i), i=0,this%nx-1)      ]
+        this%xi   = [ (this%xmin + (i-1)*this%dx(i), i=1,this%nx) ]
         this%xc   = [ (0.5e0*(this%xi(i)+this%xi(i+1)), i=1,this%nx) ]
-        this%area = this%xi**2
+        this%area = ONE !this%xi**2
         this%vol  = this%xc**2 * this%dx
 
     END SUBROUTINE init

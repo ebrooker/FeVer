@@ -187,7 +187,6 @@ CONTAINS
         CHARACTER(LEN=*),    INTENT(IN)    :: key
         INTEGER(smInt)                     :: value
         CLASS(*),            ALLOCATABLE   :: newval
-        INTEGER(lgInt)                     :: ierr
         INTEGER(lgInt)                     :: index
         LOGICAL                            :: inlist
 
@@ -214,7 +213,6 @@ CONTAINS
         CHARACTER(LEN=*),    INTENT(IN)    :: key
         INTEGER(lgInt)                     :: value
         CLASS(*),            ALLOCATABLE   :: newval
-        INTEGER(lgInt)                     :: ierr
         INTEGER(lgInt)                     :: index
         LOGICAL                            :: inlist
 
@@ -240,7 +238,6 @@ CONTAINS
         CHARACTER(LEN=*),    INTENT(IN)    :: key
         REAL(wp)                           :: value
         CLASS(*),            ALLOCATABLE   :: newval
-        INTEGER(lgInt)                     :: ierr
         INTEGER(lgInt)                     :: index
         LOGICAL                            :: inlist
 
@@ -265,7 +262,6 @@ CONTAINS
         CHARACTER(LEN=*),    INTENT(IN)    :: key
         LOGICAL                            :: value
         CLASS(*),            ALLOCATABLE   :: newval
-        INTEGER(lgInt)                     :: ierr
         INTEGER(lgInt)                     :: index
         LOGICAL                            :: inlist
 
@@ -290,7 +286,6 @@ CONTAINS
         CHARACTER(LEN=*),    INTENT(IN)    :: key
         CHARACTER(LEN=*),    INTENT(IN)    :: value
         CLASS(*),            ALLOCATABLE   :: newval
-        INTEGER(lgInt)                     :: ierr
         INTEGER(lgInt)                     :: index
         LOGICAL                            :: inlist
 
@@ -319,14 +314,13 @@ CONTAINS
         CLASS(Dictionary_t), INTENT(IN)  :: this
         CHARACTER(LEN=*),    INTENT(IN)  :: key
         INTEGER(smInt),      INTENT(OUT) :: value
-        INTEGER(lgInt)                   :: ierr
         INTEGER(lgInt)                   :: index
         LOGICAL                          :: inlist
 
         CALL this%isKeyInList(key,inlist,index)
         IF (inlist) THEN
             SELECT TYPE (temp => this%entries(index)%getValue())
-            TYPE IS (INTEGER(lgInt))
+            TYPE IS (INTEGER(smInt))
                 value = temp
             CLASS DEFAULT
                 stop "[getEntry ERROR] Entry VALUE not type INTEGER"
@@ -340,7 +334,6 @@ CONTAINS
         CLASS(Dictionary_t), INTENT(IN)  :: this
         CHARACTER(LEN=*),    INTENT(IN)  :: key
         INTEGER(lgInt),      INTENT(OUT) :: value
-        INTEGER(lgInt)                   :: ierr
         INTEGER(lgInt)                   :: index
         LOGICAL                          :: inlist
 
@@ -362,7 +355,6 @@ CONTAINS
         CLASS(Dictionary_t), INTENT(IN)  :: this
         CHARACTER(LEN=*),    INTENT(IN)  :: key
         REAL(wp),            INTENT(OUT) :: value
-        INTEGER(lgInt)                   :: ierr
         INTEGER(lgInt)                   :: index
         LOGICAL                          :: inlist
 
@@ -384,7 +376,6 @@ CONTAINS
         CLASS(Dictionary_t),           INTENT(IN)  :: this
         CHARACTER(LEN=*),              INTENT(IN)  :: key
         CHARACTER(LEN=:), ALLOCATABLE, INTENT(OUT) :: value
-        INTEGER(lgInt)                             :: ierr
         INTEGER(lgInt)                             :: index
         LOGICAL                                    :: inlist
 
@@ -406,7 +397,6 @@ CONTAINS
         CLASS(Dictionary_t), INTENT(IN)  :: this
         CHARACTER(LEN=*),    INTENT(IN)  :: key
         LOGICAL,             INTENT(OUT) :: value
-        INTEGER(lgInt)                   :: ierr
         INTEGER(lgInt)                   :: index
         LOGICAL                          :: inlist
 
