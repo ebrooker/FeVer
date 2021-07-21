@@ -29,6 +29,9 @@ OOP FeVer-1D ( source found in `src/` )
 * Ensure CMake is installed on your system
 * Navigate to `bin/`
 * Execute bash script `./build.sh`
+* Verify simulation results with Python 3.x!
+  - Navigate to `plot/`
+  - Execute Python script `python plot.py`
 
 
 Old FeVer-1D ( source found in `old_FeVer_1D/` )
