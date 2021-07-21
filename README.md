@@ -45,8 +45,8 @@ Ezra Brooker
 
 ## Version History
 
-* 0.2 (Alpha stage) (We have advection!)
-
+* v0.2 (Alpha stage) We have advection!
+* v0.1 (Alpha stage) Upload of old clunky FeVer code
 
 ## License
 
