@@ -1,0 +1,19 @@
+name = "FeVer"
+version = "0.1.0"
+license = "license"
+author = "ebrooker"
+maintainer = "18298060+ebrooker@users.noreply.github.com"
+copyright = "Copyright 2025, ebrooker"
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+module-naming = false
+[install]
+library = false
+test = false
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
+
