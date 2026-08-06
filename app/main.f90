@@ -16,7 +16,7 @@ program main
         write(*,"(/,A,/)") compiler_options()
     end block GREETING
 
-    call read_config("/Users/ezrabrooker/Projects/WhiteSands/Fortran/FeVer/fever.nml", cfg)
+    call read_config("fever.nml", cfg)
 
     call grid%initialize(n_cells=cfg%n_cells, x_min=cfg%x_min, x_max=cfg%x_max, n_ghost=cfg%n_ghost)
 
