@@ -19,6 +19,7 @@ module grid_m
     !!
         integer(ip) :: n_cells
         integer(ip) :: n_ghost = 1_ip
+        integer(ip) :: ilo, ihi
         real(rp) :: dx, x_min, x_max
         real(rp) :: cell_area, cell_volume
         real(rp), allocatable :: xc(:)  ! cell centers, size 1-n_ghost:n_cells+n_ghost
@@ -83,16 +84,16 @@ contains
         end if
 
         !! Set ghost cell adjust lower and upper bounds
-        ilo = 1_ip-this%n_ghost
-        ihi = n_cells+this%n_ghost
+        this%ilo = 1_ip-this%n_ghost
+        this%ihi = n_cells+this%n_ghost
 
         !! Allocate and fill the cell centers and faces
         call this%clear()
-        allocate(this%xc(ilo:ihi), source=0.0_rp)
-        allocate(this%xi(ilo-1:ihi), source=0.0_rp)
+        allocate(this%xc(this%ilo:this%ihi), source=0.0_rp)
+        allocate(this%xi(this%ilo-1:this%ihi), source=0.0_rp)
 
-        this%xi = [ (this%x_min + i*this%dx, i=ilo-1,ihi) ]
-        this%xc = 0.5_rp * (this%xi(ilo-1:ihi-1) + this%xi(ilo:ihi))
+        this%xi = [ (this%x_min + i*this%dx, i=this%ilo-1,this%ihi) ]
+        this%xc = 0.5_rp * (this%xi(this%ilo-1:this%ihi-1) + this%xi(this%ilo:this%ihi))
 
         this%cell_area = 1.0_rp
         this%cell_volume = this%dx * 1.0_rp * 1.0_rp

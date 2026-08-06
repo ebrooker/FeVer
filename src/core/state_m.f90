@@ -50,7 +50,7 @@ contains
 
         !! Allocate and fill the cell centers and faces
         call this%clear()
-        allocate(this%u(this%n_vars, 1-grid%n_ghost:grid%n_cells+grid%n_ghost), source=0.0_rp)
+        allocate(this%u(this%n_vars, grid%ilo:grid%ihi), source=0.0_rp)
 
     end subroutine state_initialize
 
