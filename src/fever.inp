@@ -1,7 +1,0 @@
-ng = 4
-nx = 64
-xmin = 0.0
-xmax = 1.0
-tmax = 1.0
-cfl = 0.4
-bc_type = periodic
