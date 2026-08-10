@@ -41,11 +41,13 @@ program main
         real(rp) :: cfl
         real(rp) :: t_max
         real(rp) :: t, dt
+        integer(ip) :: steps
 
         advection_speed = cfg%advection_speed
         cfl = cfg%cfl
         t_max = cfg%t_max
         t = 0.0_rp
+        steps = 0
 
         do while(t < t_max)
 
@@ -61,6 +63,7 @@ program main
 
             !! Update time
             t = t + dt
+            steps = steps + 1
 
             chkpoint_filename = snapshot_filename(chkpoint_basename, steps)
             call write_state_csv(chkpoint_filename, grid, state)
