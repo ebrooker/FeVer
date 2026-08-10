@@ -32,7 +32,12 @@ contains
     !> piecewise-constant reconstruction has zero slope by definition.        <!
     !>------------------------------------------------------------------------<!
     subroutine test_reconstruct_constant_matches_input()
-        real(rp) :: u(1,5), u_left(1,5), u_right(1,5)
+        real(rp), allocatable :: u(:,:), u_left(:,:), u_right(:,:)
+
+        allocate(u(1,5))
+        allocate(u_left(1,5))
+        allocate(u_right(1,5))
+
         u(1,:) = [1.0_rp, 2.0_rp, 3.0_rp, 4.0_rp, 5.0_rp]
 
         call reconstruct_constant(u, u_left, u_right)
@@ -47,7 +52,12 @@ contains
     !> reconstruction with nonzero slope                                      <!
     !>------------------------------------------------------------------------<!
     subroutine test_reconstruct_constant_left_equals_right()
-        real(rp) :: u(1,4), u_left(1,4), u_right(1,4)
+        real(rp), allocatable :: u(:,:), u_left(:,:), u_right(:,:)
+
+        allocate(u(1,4))
+        allocate(u_left(1,4))
+        allocate(u_right(1,4))
+
         u(1,:) = [-1.0_rp, 0.5_rp, 2.5_rp, 100.0_rp]
 
         call reconstruct_constant(u, u_left, u_right)
@@ -61,7 +71,12 @@ contains
     !> is ever called with mismatched u_left/u_right allocations.             <!
     !>------------------------------------------------------------------------<!
     subroutine test_reconstruct_constant_preserves_shape()
-        real(rp) :: u(1,6), u_left(1,6), u_right(1,6)
+        real(rp), allocatable :: u(:,:), u_left(:,:), u_right(:,:)
+
+        allocate(u(1,6))
+        allocate(u_left(1,6))
+        allocate(u_right(1,6))
+
         u(1,:) = 1.0_rp
 
         call reconstruct_constant(u, u_left, u_right)
@@ -78,7 +93,12 @@ contains
     !> that mixes rows together would be caught.                              <!
     !>------------------------------------------------------------------------<!
     subroutine test_reconstruct_constant_multivar()
-        real(rp) :: u(2,3), u_left(2,3), u_right(2,3)
+        real(rp), allocatable :: u(:,:), u_left(:,:), u_right(:,:)
+
+        allocate(u(2,3))
+        allocate(u_left(2,3))
+        allocate(u_right(2,3))
+
         u(1,:) = [1.0_rp, 2.0_rp, 3.0_rp]
         u(2,:) = [10.0_rp, 20.0_rp, 30.0_rp]
 
