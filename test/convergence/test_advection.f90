@@ -147,7 +147,6 @@ contains
                 s%u(1,:) = sin(pi2 * g%xc / L)
                 u0 = s%u(1,1:g%n_cells)
 
-                ! dt = t_final/10000.0_rp
                 do while (t < t_final)
                     dt = compute_dt(g%dx, a, cfl)
                     dt = min(dt, t_final - t)
