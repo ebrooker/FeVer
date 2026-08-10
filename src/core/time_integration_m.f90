@@ -1,5 +1,5 @@
 module time_integration_m
-    use reconstruct_m, only : reconstruct_constant
+    use reconstruct_m, only : reconstruct_constant, reconstruct_linear_minmod, reconstruct_linear
     use kinds_m, only : rp, ip
     use flux_m, only : upwind_flux_advection
     use grid_m, only : grid_t
@@ -16,17 +16,18 @@ contains
     !!
     !! TODO: Guard against unfilled ghost cells
     !!
-    subroutine advance_euler_explicit(grid, state, dt, a)
+    subroutine advance_euler_explicit(grid, state, dt, a, reconstruction_method)
         type(grid_t), intent(in) :: grid
         type(state_t), intent(inout) :: state
         real(rp), intent(in) :: dt, a
+        character(len=*), intent(in) :: reconstruction_method
 
         !! RHS update
         real(rp), allocatable :: dudt(:,:)
         if (allocated(dudt)) deallocate(dudt)
         allocate(dudt(state%n_vars,1:grid%n_cells))
 
-        call compute_rhs(grid, state%u, a, dudt)
+        call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
 
         !! Update solution with timestep integrated RHS
         state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * dudt
@@ -35,16 +36,32 @@ contains
 
     end subroutine advance_euler_explicit
 
-    subroutine compute_rhs(grid, u, speed, dudt)
+    subroutine compute_rhs(grid, u, speed, dudt, dt, reconstruction_method)
         type(grid_t), intent(in) :: grid
-        real(rp), intent(in) :: u(:,:)
-        real(rp), intent(in) :: speed
+        real(rp), allocatable, intent(in) :: u(:,:)
+        real(rp), intent(in) :: speed, dt
         real(rp), intent(out) :: dudt(:,:)
+        character(len=*), intent(in) :: reconstruction_method
 
-        real(rp), dimension(size(u,dim=1),1-grid%n_ghost:grid%n_cells+grid%n_ghost) :: u_left, u_right
+        real(rp), allocatable :: u_left(:,:), u_right(:,:)
         integer(ip) :: i
 
-        call reconstruct_constant(u, u_left, u_right)
+        if (allocated(u_left)) deallocate(u_left)
+        allocate(u_left(size(u,dim=1),1-grid%n_ghost:grid%n_cells+grid%n_ghost), source=0.0_rp)
+
+        if (allocated(u_right)) deallocate(u_right)
+        allocate(u_right(size(u,dim=1),1-grid%n_ghost:grid%n_cells+grid%n_ghost), source=0.0_rp)
+
+
+        !! Select the interface reconstruction method
+        select case(trim(reconstruction_method))
+            case ("constant")
+                call reconstruct_constant(u, u_left, u_right)
+            case ("linear-minmod")
+                call reconstruct_linear_minmod(u,u_left,u_right,grid%dx,dt,1,grid%n_cells, speed)
+            case default
+                call reconstruct_linear_minmod(u,u_left,u_right,grid%dx,dt,1,grid%n_cells, speed)
+        end select
 
         do i = lbound(dudt,dim=2), ubound(dudt,dim=2)
             dudt(:,i) = upwind_flux_advection(u_left(:,i-1), u_right(:,i), speed) &
