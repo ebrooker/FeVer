@@ -11,8 +11,10 @@ contains
         real(rp) :: F(size(uL))
         if (a > 0) then
             F = a*uL
-        else
+        else if (a < 0) then
             F = a*uR
+        else
+            F = 0.5_rp * (a) * (uL + uR)
         end if
     end function upwind_flux_advection
 

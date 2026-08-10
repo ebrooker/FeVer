@@ -14,6 +14,8 @@ module config_m
     real(rp) :: advection_speed
     real(rp) :: cfl
     real(rp) :: t_max
+    character(len=:), allocatable :: reconstruction_method
+    character(len=:), allocatable :: base_name
   end type config_t
 
 contains
@@ -27,9 +29,10 @@ contains
 
     integer  :: n_cells, n_ghost, n_vars
     real(rp) :: x_min, x_max, advection_speed, cfl, t_max
+    character(len=256) :: reconstruction_method, base_name
 
     namelist /grid_nml/ n_cells, n_ghost, n_vars, &
-                         x_min, x_max, advection_speed, cfl, t_max
+                         x_min, x_max, advection_speed, cfl, t_max, reconstruction_method, base_name
 
     ! Defaults -- used for any entry the namelist file omits
     n_cells = 100
@@ -40,6 +43,7 @@ contains
     advection_speed = 1.0_rp
     cfl   = 0.5_rp
     t_max = 1.0_rp
+    reconstruction_method = "default"
 
     open (newunit=unit, file=filename, status='old', action='read', &
           iostat=ios, iomsg=iomsg)
@@ -53,7 +57,7 @@ contains
     close (unit)
 
     cfg = config_t(n_cells, n_ghost, n_vars, x_min, x_max, &
-                    advection_speed, cfl, t_max)
+                    advection_speed, cfl, t_max, trim(reconstruction_method), trim(base_name))
 
   end subroutine read_config
 

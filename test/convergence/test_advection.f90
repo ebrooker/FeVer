@@ -31,7 +31,8 @@ contains
     function tests()
         type(test_list) :: tests
         tests = test_list([ &
-            test("convergence_rate_piecewise_constant", test_convergence_rate_piecewise_constant) &
+            test("convergence_rate_piecewise_constant", test_convergence_rate_piecewise_constant), &
+            test("convergence_rate_piecewise_linear_minmod", test_convergence_rate_piecewise_linear_minmod) &
         ])
     end function tests
 
@@ -42,12 +43,6 @@ contains
     !> solution at each, and confirm the observed order of accuracy is        <!
     !> close to 1 for piecewise-constant reconstruction (log-log slope of     <!
     !> error vs dx).                                                          <!
-    !>                                                                        <!
-    !> NOTE: this test is written now against reconstruct_constant only.      <!
-    !> Once reconstruct_linear_minmod exists, duplicate this test (or         <!
-    !> parametrize it) to confirm ~2nd order for the limited-linear case --   <!
-    !> this is the single most direct piece of evidence that the limiter      <!
-    !> is implemented correctly, more informative than eyeballing a plot.     <!
     !>------------------------------------------------------------------------<!
     subroutine test_convergence_rate_piecewise_constant()
         integer(ip), parameter :: n_resolutions = 5
@@ -87,7 +82,7 @@ contains
                     dt = compute_dt(g%dx, a, cfl)
                     dt = min(dt, t_final - t)
                     call apply_periodic_bc(g, s)
-                    call advance_euler_explicit(g, s, dt, a)
+                    call advance_euler_explicit(g, s, dt, a, "constant")
                     t = t + dt
                 end do
 
@@ -103,10 +98,79 @@ contains
         !
         ! compute observsient effects, tight enough to catch a
         ! scheme that's actually 0th- or 2nd-order due to a bug.
-        do r = 1,n_resolutions-2
+        do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
             call check(observed_order > 0.85_rp .and. observed_order < 1.15_rp)
         end do
     end subroutine test_convergence_rate_piecewise_constant
+
+
+
+    !>------------------------------------------------------------------------<!
+    !> Convergence-rate test: run the smooth-IC translation problem at        <!
+    !> several resolutions, compute the L1 (or L2) error against the exact    <!
+    !> solution at each, and confirm the observed order of accuracy is        <!
+    !> close to 1.7 for piecewise-linear reconstruction (log-log slope of     <!
+    !> error vs dx). Assumes forward Euler timestepping                       <!
+    !>------------------------------------------------------------------------<!
+    subroutine test_convergence_rate_piecewise_linear_minmod()
+        integer(ip), parameter :: n_resolutions = 5
+        integer(ip) :: n_cells_list(n_resolutions)
+        real(rp) :: errors(n_resolutions)
+        real(rp) :: observed_order, top, bot
+        integer(ip) :: r
+
+        real(rp), parameter :: L=1.0_rp, a=1.0_rp, cfl=0.5_rp
+        integer(ip), parameter :: n_ghost=2
+
+        n_cells_list = [32, 64, 128, 256, 512]
+
+        do r = 1, n_resolutions
+            ! run the exact_translation_one_period problem at
+            ! n_cells_list(r), compute L1 error = sum(abs(u_numerical -
+            ! u_exact)) * dx (or L2 = sqrt(sum((u_num-u_exact)**2)*dx)),
+            ! store into errors(r).
+            block
+                type(grid_t) :: g
+                type(state_t) :: s
+
+                real(rp) :: t_final, t, dt
+                real(rp), allocatable :: u0(:)
+                integer(ip) :: n_cells
+
+                n_cells = n_cells_list(r)
+                t_final = L / a
+                t = 0.0_rp
+
+                call g%initialize(n_cells, 0.0_rp, L, n_ghost)
+                call s%initialize(1, g)
+                s%u(1,:) = sin(pi2 * g%xc / L)
+                u0 = s%u(1,1:g%n_cells)
+
+                do while (t < t_final)
+                    dt = compute_dt(g%dx, a, cfl)
+                    dt = min(dt, t_final - t)
+                    call apply_periodic_bc(g, s)
+                    call advance_euler_explicit(g, s, dt, a, "linear-minmod")
+                    t = t + dt
+                end do
+
+                errors(r) = sqrt(sum((s%u(1,1:g%n_cells) - u0)**2)*g%dx)
+
+            end block
+        end do
+
+        ! Observed order from consecutive resolutions (assuming each
+        ! successive n_cells doubles, as here): order = log2(errors(r) /
+        ! errors(r+1)). Average over the pairs, or just check each pair
+        ! individually is within a reasonable band of 1.6 - 1.7 keeping
+        ! in mind that Forward Euler integration will weaken the order
+        do r = 1,n_resolutions-1
+            observed_order = log2(errors(r) / errors(r+1))
+            print *, "PLM ", observed_order
+            call check(observed_order > 1.60_rp .and. observed_order < 1.70_rp)
+        end do
+    end subroutine test_convergence_rate_piecewise_linear_minmod
+
 
 end module test_convergence_advection

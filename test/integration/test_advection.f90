@@ -74,7 +74,7 @@ module test_integration_advection
         dt = 1.0
 
         ! advance solution by one timestep
-        call advance_euler_explicit(grid, state, dt, a)
+        call advance_euler_explicit(grid, state, dt, a, "constant")
         
         ! should 
         call check(all( &
@@ -122,7 +122,7 @@ module test_integration_advection
             dt = compute_dt(grid%dx, a, cfl)
             dt = min(dt, t_final - t)
             call apply_periodic_bc(grid, state)
-            call advance_euler_explicit(grid, state, dt, a)
+            call advance_euler_explicit(grid, state, dt, a, "constant")
             t = t + dt
         end do
 
@@ -163,9 +163,9 @@ module test_integration_advection
         dt = 1.0 ! dx=1.0, a=1.0, cfl=1.0
 
         ! take one or several steps.
-        call advance_euler_explicit(grid, state, dt, a)
-        call advance_euler_explicit(grid, state, dt, a)
-        call advance_euler_explicit(grid, state, dt, a)
+        call advance_euler_explicit(grid, state, dt, a, "constant")
+        call advance_euler_explicit(grid, state, dt, a, "constant")
+        call advance_euler_explicit(grid, state, dt, a, "constant")
 
         ! confirm state%u(:,interior) is unchanged (is_equal or a
         !   tight tolerance) -- any deviation here indicates a bug in the

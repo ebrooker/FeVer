@@ -1,7 +1,13 @@
 # Development folders
-**/dev
-**/testdir
-**/build
+data
+build
+movies
+uv.lock
+.python-version
+pyproject.toml
+*.code-workspace
+.DS_Store
+dist
 
 # Fortran module files
 *.mod
