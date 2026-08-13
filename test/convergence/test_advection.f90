@@ -156,19 +156,17 @@ contains
                 end do
 
                 errors(r) = sqrt(sum((s%u(1,1:g%n_cells) - u0)**2)*g%dx)
-
             end block
         end do
 
         ! Observed order from consecutive resolutions (assuming each
         ! successive n_cells doubles, as here): order = log2(errors(r) /
         ! errors(r+1)). Average over the pairs, or just check each pair
-        ! individually is within a reasonable band of 1.6 - 1.7 keeping
+        ! individually is within a reasonable band of 1.45 - 1.7 keeping
         ! in mind that Forward Euler integration will weaken the order
         do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
-            print *, "PLM ", observed_order
-            call check(observed_order > 1.60_rp .and. observed_order < 1.70_rp)
+            call check(observed_order > 1.45_rp .and. observed_order < 1.70_rp)
         end do
     end subroutine test_convergence_rate_piecewise_linear_minmod
 

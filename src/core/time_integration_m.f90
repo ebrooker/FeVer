@@ -1,9 +1,10 @@
 module time_integration_m
-    use reconstruct_m, only : reconstruct_constant, reconstruct_linear_minmod, reconstruct_linear
+    use reconstruct_m, only : reconstruct_constant, reconstruct_linear_minmod
     use kinds_m, only : rp, ip
     use flux_m, only : upwind_flux_advection
     use grid_m, only : grid_t
     use state_m, only : state_t
+    use boundary_conditions_m, only : apply_periodic_bc
     implicit none
     private
     public :: compute_dt, advance_euler_explicit
@@ -27,10 +28,24 @@ contains
         if (allocated(dudt)) deallocate(dudt)
         allocate(dudt(state%n_vars,1:grid%n_cells))
 
-        call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
 
-        !! Update solution with timestep integrated RHS
-        state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * dudt
+        !! Select the interface reconstruction method
+        call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
+        select case(trim(reconstruction_method))
+            case ("constant")
+                state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * dudt
+            case ("linear-minmod")
+                block
+                    real(rp), allocatable :: utmp(:,:)
+                    allocate(utmp(state%n_vars, grid%ilo:grid%ihi))
+                    utmp(:,1:grid%n_cells) = state%u(:,1:grid%n_cells)
+                    state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + 0.5 * dt * dudt
+                    call apply_periodic_bc(grid, state)
+                    call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
+                    state%u(:,1:grid%n_cells) = utmp(:,1:grid%n_cells) + dt * dudt
+                end block
+            case default
+        end select
 
         if (allocated(dudt)) deallocate(dudt)
 
@@ -58,9 +73,9 @@ contains
             case ("constant")
                 call reconstruct_constant(u, u_left, u_right)
             case ("linear-minmod")
-                call reconstruct_linear_minmod(u,u_left,u_right,grid%dx,dt,1,grid%n_cells, speed)
+                call reconstruct_linear_minmod(u,u_left,u_right,1,grid%n_cells)
             case default
-                call reconstruct_linear_minmod(u,u_left,u_right,grid%dx,dt,1,grid%n_cells, speed)
+                call reconstruct_linear_minmod(u,u_left,u_right,1,grid%n_cells)
         end select
 
         do i = lbound(dudt,dim=2), ubound(dudt,dim=2)
