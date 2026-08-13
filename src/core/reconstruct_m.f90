@@ -44,23 +44,21 @@ contains
 
     end subroutine reconstruct_linear
 
-    subroutine reconstruct_linear_minmod(u, u_left, u_right, dx, dt, ilo, ihi, speed)
+    subroutine reconstruct_linear_minmod(u, u_left, u_right, ilo, ihi)
         real(rp), intent(in), allocatable :: u(:,:)
         real(rp), intent(inout), allocatable :: u_left(:,:), u_right(:,:)
         integer, intent(in) :: ilo, ihi
-        real(rp), intent(in) :: dx, dt, speed
         integer :: i, n
-        real(rp) :: s1, s2
         real(rp) :: slope(ilo-1:ihi+1)
 
         do n = 1, ubound(u, dim=1)
             do i = ilo-1, ihi+1
-                slope(i) = minmod( (u(n,i) - u(n,i-1))/dx, (u(n,i+1) - u(n,i))/dx )
+                slope(i) = minmod( (u(n,i) - u(n,i-1)), (u(n,i+1) - u(n,i)) )
             end do
 
             do i = ilo-1, ihi+1
-                u_left(n,i) = u(n,i) + 0.5_rp * slope(i) * (dx - speed*dt)
-                u_right(n,i) = u(n,i) - 0.5_rp * slope(i) * (dx - speed*dt)
+                u_left(n,i) = u(n,i) + 0.5_rp * slope(i)
+                u_right(n,i) = u(n,i) - 0.5_rp * slope(i)
             end do
         end do
 
