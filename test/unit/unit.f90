@@ -4,6 +4,7 @@
 program testapp_unit
     use test_unit_boundary_conditions, only: bc_tests => tests
     use test_unit_flux, only: flux_tests => tests
+    use test_unit_flux_m, only : flux_unit_tests => tests
     use test_unit_grid, only: grid_tests => tests
     use test_unit_initial_conditions, only: ic_tests => tests
     use test_unit_reconstruct, only: reconstruct_tests => tests
@@ -21,7 +22,8 @@ program testapp_unit
             ic_tests(), &
             reconstruct_tests(), &
             state_tests(), &
-            time_integration_tests() &
+            time_integration_tests(), &
+            flux_unit_tests() &
         ]) &
     )
 end program testapp_unit

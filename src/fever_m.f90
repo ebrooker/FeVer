@@ -2,14 +2,13 @@ module fever
     use kinds_m
     use config_m
     use io_m
-    use constants_m, only : pi, pi2
-
-    ! use field_m, only : field_t
-    use grid_m, only : grid_t
-    use state_m, only : state_t
-    use functions_1d_m, only : sine, square_pulse
-    use boundary_conditions_m, only : apply_periodic_bc
-    use time_integration_m, only : advance_euler_explicit, compute_dt
+    use constants_m
+    use grid_m
+    use state_m
+    use functions_1d_m
+    use boundary_conditions_m, only : select_boundary_condition, bc_procedure_i
+    use time_integration_m, only : select_integrator_method, select_rhs_method, integrator_procedure_i, rhs_procedure_i, compute_dt, compute_dt_burgers
+    use reconstruct_m, only : select_reconstruction_method, reconstruction_procedure_i
     implicit none
 
     public :: print_banner

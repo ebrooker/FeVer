@@ -10,10 +10,11 @@ module test_integration_advection
     use fortuno_serial, only: test => serial_case_item, &
                               check => serial_check, test_list
 
-    use boundary_conditions_m, only : apply_periodic_bc
     use grid_m, only: grid_t
     use state_m, only: state_t
-    use time_integration_m, only: compute_dt, advance_euler_explicit
+    use boundary_conditions_m, only : bc_procedure_i, select_boundary_condition
+    use reconstruct_m, only : select_reconstruction_method, reconstruction_procedure_i
+    use time_integration_m, only: compute_dt, select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
     implicit none
     private
     public :: tests
@@ -51,6 +52,16 @@ module test_integration_advection
         type(state_t) :: state
         real(rp) :: a, dt, expected(4)
 
+        procedure(rhs_procedure_i), pointer :: rhs => null()
+        procedure(bc_procedure_i), pointer :: bc => null()
+        procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+        procedure(integrator_procedure_i), pointer :: integrator => null()
+
+        integrator => select_integrator_method("forward-euler")
+        reconstruction => select_reconstruction_method("constant")
+        rhs => select_rhs_method("advection")
+        bc => select_boundary_condition("periodic")
+
         ! set expectations
         expected = [4.0_rp, 1.0_rp, 2.0_rp, 3.0_rp]
 
@@ -61,12 +72,6 @@ module test_integration_advection
         call state%initialize(n_vars=1_ip, grid=grid)
         state%u(1,1:4) = [1.0_rp, 2.0_rp, 3.0_rp, 4.0_rp]
 
-        ! fill ghost cells by hand for periodic BC:
-        !   u(:,0) = u(:,4)   (left ghost = rightmost interior cell)
-        !   u(:,5) = u(:,1)   (right ghost = leftmost interior cell)
-        state%u(:,0) = state%u(:,4)
-        state%u(:,5) = state%u(:,1)
-
         ! positive direction advection
         a = 1.0
 
@@ -74,7 +79,7 @@ module test_integration_advection
         dt = 1.0
 
         ! advance solution by one timestep
-        call advance_euler_explicit(grid, state, dt, a, "constant")
+        call integrator(grid, state, dt, a, rhs, bc, reconstruction)
         
         ! should 
         call check(all( &
@@ -96,6 +101,16 @@ module test_integration_advection
         real(rp), allocatable :: u0(:)
         real(rp) :: a, cfl, dt, t, t_final, L, error
         integer(ip) :: n_cells, i
+
+        procedure(rhs_procedure_i), pointer :: rhs => null()
+        procedure(bc_procedure_i), pointer :: bc => null()
+        procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+        procedure(integrator_procedure_i), pointer :: integrator => null()
+
+        integrator => select_integrator_method("forward-euler")
+        reconstruction => select_reconstruction_method("constant")
+        rhs => select_rhs_method("advection")
+        bc => select_boundary_condition("periodic")
 
         ! construct grid over [0, L) with periodic topology in mind,
         ! n_cells chosen for a moderate resolution (e.g. 64).
@@ -121,8 +136,7 @@ module test_integration_advection
         do while (t < t_final)
             dt = compute_dt(grid%dx, a, cfl)
             dt = min(dt, t_final - t)
-            call apply_periodic_bc(grid, state)
-            call advance_euler_explicit(grid, state, dt, a, "constant")
+            call integrator(grid, state, dt, a, rhs, bc, reconstruction)
             t = t + dt
         end do
 
@@ -151,21 +165,29 @@ module test_integration_advection
         real(rp) :: a, dt
         real(rp), allocatable :: u_before(:)
 
+        procedure(rhs_procedure_i), pointer :: rhs => null()
+        procedure(bc_procedure_i), pointer :: bc => null()
+        procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+        procedure(integrator_procedure_i), pointer :: integrator => null()
+
+        integrator => select_integrator_method("forward-euler")
+        reconstruction => select_reconstruction_method("constant")
+        rhs => select_rhs_method("advection")
+        bc => select_boundary_condition("periodic")
+
         call grid%initialize(n_cells=32_ip, n_ghost=2_ip, x_min=0.0_rp, x_max=32.0_rp)
         call state%initialize(n_vars=2, grid=grid)
         state%u(:,1:grid%n_cells) = 2.0_rp
         
         u_before = state%u(1,1:grid%n_cells)
 
-        call apply_periodic_bc(grid, state)
-
         a = 1.0
         dt = 1.0 ! dx=1.0, a=1.0, cfl=1.0
 
         ! take one or several steps.
-        call advance_euler_explicit(grid, state, dt, a, "constant")
-        call advance_euler_explicit(grid, state, dt, a, "constant")
-        call advance_euler_explicit(grid, state, dt, a, "constant")
+        call integrator(grid, state, dt, a, rhs, bc, reconstruction)
+        call integrator(grid, state, dt, a, rhs, bc, reconstruction)
+        call integrator(grid, state, dt, a, rhs, bc, reconstruction)
 
         ! confirm state%u(:,interior) is unchanged (is_equal or a
         !   tight tolerance) -- any deviation here indicates a bug in the

@@ -7,7 +7,7 @@ module test_unit_reconstruct
     use kinds_m, only: rp, ip
     use fortuno_serial, only: is_equal, test => serial_case_item, &
                               check => serial_check, test_list
-    use reconstruct_m, only: reconstruct_constant
+    use reconstruct_m, only: reconstruct_constant, reconstruct_linear_minmod, reconstruct_linear
     implicit none
     private
     public :: tests

@@ -7,10 +7,11 @@
 module test_convergence_advection
     use kinds_m, only: rp, ip
     use constants_m, only : pi2
-    use boundary_conditions_m, only : apply_periodic_bc
     use grid_m, only: grid_t
     use state_m, only: state_t
-    use time_integration_m, only: compute_dt, advance_euler_explicit
+    use boundary_conditions_m, only : bc_procedure_i, select_boundary_condition
+    use reconstruct_m, only : select_reconstruction_method, reconstruction_procedure_i
+    use time_integration_m, only: compute_dt, select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
     use fortuno_serial, only: test => serial_case_item, &
                               check => serial_check, test_list
     implicit none
@@ -54,6 +55,17 @@ contains
         real(rp), parameter :: L=1.0_rp, a=1.0_rp, cfl=0.5_rp
         integer(ip), parameter :: n_ghost=1
 
+        procedure(rhs_procedure_i), pointer :: rhs => null()
+        procedure(bc_procedure_i), pointer :: bc => null()
+        procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+        procedure(integrator_procedure_i), pointer :: integrator => null()
+
+        integrator => select_integrator_method("forward-euler")
+        reconstruction => select_reconstruction_method("constant")
+        rhs => select_rhs_method("advection")
+        bc => select_boundary_condition("periodic")
+
+
         n_cells_list = [32, 64, 128, 256, 512]
 
         do r = 1, n_resolutions
@@ -81,8 +93,7 @@ contains
                 do while (t < t_final)
                     dt = compute_dt(g%dx, a, cfl)
                     dt = min(dt, t_final - t)
-                    call apply_periodic_bc(g, s)
-                    call advance_euler_explicit(g, s, dt, a, "constant")
+                    call integrator(g, s, dt, a, rhs, bc, reconstruction)
                     t = t + dt
                 end do
 
@@ -100,6 +111,7 @@ contains
         ! scheme that's actually 0th- or 2nd-order due to a bug.
         do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
+            print *, observed_order
             call check(observed_order > 0.85_rp .and. observed_order < 1.15_rp)
         end do
     end subroutine test_convergence_rate_piecewise_constant
@@ -123,6 +135,16 @@ contains
         real(rp), parameter :: L=1.0_rp, a=1.0_rp, cfl=0.5_rp
         integer(ip), parameter :: n_ghost=2
 
+        procedure(rhs_procedure_i), pointer :: rhs => null()
+        procedure(bc_procedure_i), pointer :: bc => null()
+        procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+        procedure(integrator_procedure_i), pointer :: integrator => null()
+
+        integrator => select_integrator_method("rk2")
+        reconstruction => select_reconstruction_method("linear-minmod")
+        rhs => select_rhs_method("advection")
+        bc => select_boundary_condition("periodic")
+
         n_cells_list = [32, 64, 128, 256, 512]
 
         do r = 1, n_resolutions
@@ -150,8 +172,7 @@ contains
                 do while (t < t_final)
                     dt = compute_dt(g%dx, a, cfl)
                     dt = min(dt, t_final - t)
-                    call apply_periodic_bc(g, s)
-                    call advance_euler_explicit(g, s, dt, a, "linear-minmod")
+                    call integrator(g, s, dt, a, rhs, bc, reconstruction)
                     t = t + dt
                 end do
 
@@ -166,6 +187,7 @@ contains
         ! in mind that Forward Euler integration will weaken the order
         do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
+            print *, observed_order
             call check(observed_order > 1.45_rp .and. observed_order < 1.70_rp)
         end do
     end subroutine test_convergence_rate_piecewise_linear_minmod

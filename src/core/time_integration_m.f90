@@ -1,63 +1,116 @@
 module time_integration_m
-    use reconstruct_m, only : reconstruct_constant, reconstruct_linear_minmod
+    use reconstruct_m, only : reconstruction_procedure_i
     use kinds_m, only : rp, ip
     use flux_m, only : upwind_flux_advection
     use grid_m, only : grid_t
     use state_m, only : state_t
-    use boundary_conditions_m, only : apply_periodic_bc
+    use boundary_conditions_m, only : bc_procedure_i
     implicit none
     private
-    public :: compute_dt, advance_euler_explicit
+    public :: compute_dt, advance_forward_euler, compute_rhs_advection, compute_dt_burgers
+    public :: advance_rk2, rhs_procedure_i, integrator_procedure_i, select_integrator_method, select_rhs_method
+
+    abstract interface
+        function rhs_procedure_i(g, u, a, reconstruction) result(dudt)
+            import :: rp, grid_t
+            type(grid_t), intent(in) :: g
+            real(rp), intent(in), allocatable :: u(:,:)
+            real(rp), intent(in) :: a
+            procedure(reconstruction_procedure_i) :: reconstruction
+            real(rp) :: dudt(size(u,1), size(u,2))
+        end function
+    end interface
+
+    abstract interface
+        subroutine integrator_procedure_i(grid, state, dt, a, rhs, fill_ghost_cells, reconstruction)
+            import rp, grid_t, state_t
+            type(grid_t), intent(in) :: grid
+            type(state_t), intent(inout) :: state
+            real(rp), intent(in) :: dt, a
+            procedure(rhs_procedure_i) :: rhs
+            procedure(bc_procedure_i) :: fill_ghost_cells
+            procedure(reconstruction_procedure_i) :: reconstruction
+        end subroutine integrator_procedure_i
+    end interface
 
 
 contains
 
-    !!
-    !! Ghost cells must be filled prior to call
-    !!
-    !! TODO: Guard against unfilled ghost cells
-    !!
-    subroutine advance_euler_explicit(grid, state, dt, a, reconstruction_method)
+        !!!> TODO: Create abstract interface for the solution advancing methods
+        !!!> TODO: 
+
+    function select_rhs_method(rhs_name) result(rhs_ptr)
+        character(len=*), intent(in) :: rhs_name
+        procedure(rhs_procedure_i), pointer :: rhs_ptr
+        select case (trim(rhs_name))
+        case ("advection")
+            rhs_ptr => compute_rhs_advection
+        case default
+            error stop "Unknown rhs: " // trim(rhs_name)
+        end select
+    end function select_rhs_method
+
+
+
+    function select_integrator_method(integrator_name) result(integrator_ptr)
+        character(len=*), intent(in) :: integrator_name
+        procedure(integrator_procedure_i), pointer :: integrator_ptr
+        select case (trim(integrator_name))
+        case ("forward-euler")
+            integrator_ptr => advance_forward_euler
+        case ("rk2")
+            integrator_ptr => advance_rk2
+        case default
+            error stop "Unknown integrator: " // trim(integrator_name)
+        end select
+    end function select_integrator_method
+
+
+
+    subroutine advance_forward_euler(grid, state, dt, a, rhs, fill_ghost_cells, reconstruction)
         type(grid_t), intent(in) :: grid
         type(state_t), intent(inout) :: state
         real(rp), intent(in) :: dt, a
-        character(len=*), intent(in) :: reconstruction_method
+        procedure(rhs_procedure_i) :: rhs
+        procedure(bc_procedure_i) :: fill_ghost_cells
+        procedure(reconstruction_procedure_i) :: reconstruction
 
-        !! RHS update
-        real(rp), allocatable :: dudt(:,:)
-        if (allocated(dudt)) deallocate(dudt)
-        allocate(dudt(state%n_vars,1:grid%n_cells))
+        call fill_ghost_cells(grid, state)
+        state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * rhs(grid, state%u, a, reconstruction)
 
+    end subroutine advance_forward_euler
 
-        !! Select the interface reconstruction method
-        call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
-        select case(trim(reconstruction_method))
-            case ("constant")
-                state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * dudt
-            case ("linear-minmod")
-                block
-                    real(rp), allocatable :: utmp(:,:)
-                    allocate(utmp(state%n_vars, grid%ilo:grid%ihi))
-                    utmp(:,1:grid%n_cells) = state%u(:,1:grid%n_cells)
-                    state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + 0.5 * dt * dudt
-                    call apply_periodic_bc(grid, state)
-                    call compute_rhs(grid, state%u, a, dudt, dt, reconstruction_method)
-                    state%u(:,1:grid%n_cells) = utmp(:,1:grid%n_cells) + dt * dudt
-                end block
-            case default
-        end select
+    
+    subroutine advance_rk2(grid, state, dt, a, rhs, fill_ghost_cells, reconstruction)
+        type(grid_t), intent(in) :: grid
+        type(state_t), intent(inout) :: state
+        real(rp), intent(in) :: dt, a
+        procedure(rhs_procedure_i) :: rhs
+        procedure(bc_procedure_i) :: fill_ghost_cells
+        procedure(reconstruction_procedure_i) :: reconstruction
+        real(rp) :: u_init(state%n_vars,grid%n_cells)
 
-        if (allocated(dudt)) deallocate(dudt)
+        call fill_ghost_cells(grid, state)
 
-    end subroutine advance_euler_explicit
+        !! Copy initial state
+        u_init(:,1:grid%n_cells) = state%u(:,1:grid%n_cells)
+        
+        !! Compute half timestep
+        state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + 0.5 * dt * rhs(grid, state%u, a, reconstruction)
 
-    subroutine compute_rhs(grid, u, speed, dudt, dt, reconstruction_method)
+        !! Finish timestep with fluxes from half dt solution and initial state copy
+        call fill_ghost_cells(grid, state)
+        state%u(:,1:grid%n_cells) = u_init(:,1:grid%n_cells) + dt * rhs(grid, state%u, a, reconstruction)
+
+    end subroutine advance_rk2
+
+    function compute_rhs_advection(grid, u, speed, reconstruction) result(dudt)
         type(grid_t), intent(in) :: grid
         real(rp), allocatable, intent(in) :: u(:,:)
-        real(rp), intent(in) :: speed, dt
-        real(rp), intent(out) :: dudt(:,:)
-        character(len=*), intent(in) :: reconstruction_method
-
+        real(rp), intent(in) :: speed
+        procedure(reconstruction_procedure_i) :: reconstruction
+        real(rp) :: dudt(size(u,dim=1),1:grid%n_cells)
+        
         real(rp), allocatable :: u_left(:,:), u_right(:,:)
         integer(ip) :: i
 
@@ -67,28 +120,27 @@ contains
         if (allocated(u_right)) deallocate(u_right)
         allocate(u_right(size(u,dim=1),1-grid%n_ghost:grid%n_cells+grid%n_ghost), source=0.0_rp)
 
-
-        !! Select the interface reconstruction method
-        select case(trim(reconstruction_method))
-            case ("constant")
-                call reconstruct_constant(u, u_left, u_right)
-            case ("linear-minmod")
-                call reconstruct_linear_minmod(u,u_left,u_right,1,grid%n_cells)
-            case default
-                call reconstruct_linear_minmod(u,u_left,u_right,1,grid%n_cells)
-        end select
+        call reconstruction(u, u_left, u_right)
 
         do i = lbound(dudt,dim=2), ubound(dudt,dim=2)
             dudt(:,i) = upwind_flux_advection(u_left(:,i-1), u_right(:,i), speed) &
                       - upwind_flux_advection(u_left(:,i), u_right(:,i+1), speed)
         end do
         dudt = dudt / grid%dx
-    end subroutine compute_rhs
+    end function compute_rhs_advection
 
     pure function compute_dt(dx, a, cfl) result(dt)
         real(rp), intent(in) :: dx, a, cfl
         real(rp) :: dt
         dt = CFL * dx / abs(a)
     end function compute_dt
+
+    pure function compute_dt_burgers(grid, state, cfl) result(dt)
+        type(grid_t), intent(in) :: grid
+        type(state_t), intent(in) :: state
+        real(rp), intent(in) :: cfl
+        real(rp) :: dt
+        dt = cfl * grid%dx / maxval(abs(state%u))
+    end function compute_dt_burgers
 
 end module time_integration_m

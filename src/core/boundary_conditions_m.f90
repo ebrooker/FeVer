@@ -4,11 +4,34 @@ module boundary_conditions_m
     use state_m, only : state_t
     implicit none
     private
-    public :: apply_periodic_bc
+    public :: fill_ghost_cells_outflow, fill_ghost_cells_periodic, bc_procedure_i
+    public :: select_boundary_condition
+
+
+    abstract interface
+        subroutine bc_procedure_i(grid, state)
+            import :: rp, grid_t, state_t
+            type(grid_t), intent(in) :: grid
+            type(state_t), intent(inout) :: state
+        end subroutine
+    end interface
 
 contains
 
-    subroutine apply_periodic_bc(grid, state)
+    function select_boundary_condition(bc_name) result(bc_ptr)
+        character(len=*), intent(in) :: bc_name
+        procedure(bc_procedure_i), pointer :: bc_ptr
+        select case (trim(bc_name))
+        case ("periodic")
+            bc_ptr => fill_ghost_cells_periodic
+        case ("outflow")
+            bc_ptr => fill_ghost_cells_outflow
+        case default
+            error stop "Unknown boundary condition: " // trim(bc_name)
+        end select
+    end function select_boundary_condition
+
+    subroutine fill_ghost_cells_periodic(grid, state)
         type(grid_t), intent(in) :: grid
         type(state_t), intent(inout) :: state
 
@@ -24,10 +47,20 @@ contains
             state%u(:,i) = state%u(:,i - grid%n_cells)
         end do
 
-        !! Ensure boundary conditions were correctly set
-        ! if (state%u(1,0) /= state%u(1,grid%n_cells)) stop "u(0) /= u(n_cells)"
-        ! if (state%u(1,grid%n_cells+1) /= state%u(1,1)) stop "u(n_cells+1) /= u(1)"
+    end subroutine fill_ghost_cells_periodic
 
-    end subroutine apply_periodic_bc
+
+    subroutine fill_ghost_cells_outflow(grid, state)
+        type(grid_t), intent(in) :: grid
+        type(state_t), intent(inout) :: state
+
+        !! Fill ghost cells on LHS with first real mesh point (i=1)
+        state%u(:,grid%ilo:0) = spread(state%u(:,1), dim=2, ncopies=grid%n_ghost)
+
+        !! Fill ghost cells on RHS with last real mesh point (i=n_cells)
+        state%u(:,grid%n_cells+1:) = spread(state%u(:,grid%n_cells), dim=2, ncopies=grid%n_ghost)
+
+    end subroutine fill_ghost_cells_outflow
+
 
 end module boundary_conditions_m

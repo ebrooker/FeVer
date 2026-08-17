@@ -9,6 +9,11 @@ program main
     type(state_t) :: state
     character(len=:), allocatable :: chkpoint_basename, chkpoint_filename
 
+    procedure(rhs_procedure_i), pointer :: rhs => null()
+    procedure(bc_procedure_i), pointer :: bc => null()
+    procedure(reconstruction_procedure_i), pointer :: reconstruction => null()
+    procedure(integrator_procedure_i), pointer :: integrator => null()
+
     GREETING: block
         character(len=:), allocatable :: banner_filepath
         banner_filepath = "resources/banners/fever-0.txt"
@@ -18,6 +23,13 @@ program main
     end block GREETING
 
     call read_config("examples/fever.nml", cfg)
+
+
+    integrator => select_integrator_method(cfg%integrator_type)
+    reconstruction => select_reconstruction_method(cfg%reconstruction_type)
+    rhs => select_rhs_method(cfg%flux_type)
+    bc => select_boundary_condition(cfg%bc_type)
+
 
     call grid%initialize(n_cells=cfg%n_cells, x_min=cfg%x_min, x_max=cfg%x_max, n_ghost=cfg%n_ghost)
 
@@ -55,11 +67,7 @@ program main
             dt = compute_dt(grid%dx, advection_speed, cfl)
             dt = min(dt, t_max-t)
 
-            !! Apply BCs
-            call apply_periodic_bc(grid=grid, state=state)
-
-            ! call advance_euler_explicit(u, grid%n_cells, grid%n_ghost, grid%dx, dt, advection_speed)
-            call advance_euler_explicit(grid, state, dt, advection_speed, trim(cfg%reconstruction_method))
+            call integrator(grid, state, dt, advection_speed, rhs, bc, reconstruction)
 
             !! Update time
             t = t + dt

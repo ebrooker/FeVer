@@ -14,7 +14,10 @@ module config_m
     real(rp) :: advection_speed
     real(rp) :: cfl
     real(rp) :: t_max
-    character(len=:), allocatable :: reconstruction_method
+    character(len=:), allocatable :: reconstruction_type
+    character(len=:), allocatable :: bc_type
+    character(len=:), allocatable :: integrator_type
+    character(len=:), allocatable :: flux_type
     character(len=:), allocatable :: base_name
   end type config_t
 
@@ -29,10 +32,12 @@ contains
 
     integer  :: n_cells, n_ghost, n_vars
     real(rp) :: x_min, x_max, advection_speed, cfl, t_max
-    character(len=256) :: reconstruction_method, base_name
+    character(len=256) :: base_name, reconstruction_type, bc_type, integrator_type, flux_type
 
-    namelist /grid_nml/ n_cells, n_ghost, n_vars, &
-                         x_min, x_max, advection_speed, cfl, t_max, reconstruction_method, base_name
+    namelist /grid_nml/ &
+        n_cells, n_ghost, n_vars, &
+        x_min, x_max, advection_speed, cfl, t_max, reconstruction_type, base_name, &
+        bc_type, integrator_type, flux_type
 
     ! Defaults -- used for any entry the namelist file omits
     n_cells = 100
@@ -43,7 +48,10 @@ contains
     advection_speed = 1.0_rp
     cfl   = 0.5_rp
     t_max = 1.0_rp
-    reconstruction_method = "default"
+    reconstruction_type = "default"
+    bc_type = "default"
+    integrator_type = "default"
+    flux_type = "default"
 
     open (newunit=unit, file=filename, status='old', action='read', &
           iostat=ios, iomsg=iomsg)
@@ -56,8 +64,21 @@ contains
 
     close (unit)
 
-    cfg = config_t(n_cells, n_ghost, n_vars, x_min, x_max, &
-                    advection_speed, cfl, t_max, trim(reconstruction_method), trim(base_name))
+    cfg = config_t( &
+        n_cells = n_cells, &
+        n_ghost = n_ghost, &
+        n_vars = n_vars, &
+        x_min = x_min, &
+        x_max = x_max, &
+        advection_speed = advection_speed, &
+        cfl = cfl, &
+        t_max = t_max, &
+        reconstruction_type = trim(reconstruction_type), &    
+        bc_type = trim(bc_type), &    
+        integrator_type = trim(integrator_type), &    
+        flux_type = trim(flux_type), &    
+        base_name = trim(base_name) &
+    )
 
   end subroutine read_config
 

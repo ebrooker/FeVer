@@ -1,12 +1,15 @@
 &grid_nml
-  n_cells         =64
+  n_cells         = 64
   n_ghost         = 2
   n_vars          = 2
   x_min           = 0.0
   x_max           = 1.0
   advection_speed = 1.0
-  cfl             = 0.5
+  cfl             = 1.0
   t_max           = 1.0
-  reconstruction_method = "constant"
-  base_name = "data/fever_constant_snp"
+  reconstruction_type = "linear-minmod"
+  flux_type = "advection"
+  integrator_type = "rk2"
+  bc_type = "periodic"
+  base_name = "data/fever_snp"
 /

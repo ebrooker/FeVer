@@ -3,7 +3,7 @@
 !>------------------------------------------------------------------<!
 module test_unit_boundary_conditions
     use kinds_m
-    use boundary_conditions_m, only: apply_periodic_bc
+    use boundary_conditions_m, only: fill_ghost_cells_outflow, fill_ghost_cells_periodic
     use test_unit_fixtures, only : test_env_t
     use fortuno_serial, only: is_equal, test => serial_case_item, check => serial_check, test_list
     implicit none
@@ -37,7 +37,7 @@ contains
         type(test_env_t) :: test_env
         call test_env%initialize_env_small()
         call test_env%set_sine_wave()
-        call apply_periodic_bc(test_env%grid, test_env%state)
+        call fill_ghost_cells_periodic(test_env%grid, test_env%state)
 
         !! Check left hand side
         call check( test_env%state%u(1,0)  == test_env%state%u(1,test_env%grid%n_cells))
