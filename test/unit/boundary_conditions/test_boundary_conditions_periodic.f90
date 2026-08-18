@@ -1,15 +1,15 @@
 !>------------------------------------------------------------------<!
 !> Unit test module for testing boundary_conditions_m               <!
 !>------------------------------------------------------------------<!
-module test_unit_boundary_conditions
+module test_unit_periodic_bc
+    use test_bc_fixtures_m
     use kinds_m
-    use boundary_conditions_m, only: fill_ghost_cells_outflow, fill_ghost_cells_periodic
-    use test_unit_fixtures, only : test_env_t
+    use boundary_conditions_m, only: fill_ghost_cells_periodic
     use fortuno_serial, only: is_equal, test => serial_case_item, check => serial_check, test_list
     implicit none
     private
 
-    public :: tests, test_periodic_bcs
+    public :: tests, test_periodic_bc
 
 contains
 
@@ -19,7 +19,7 @@ contains
     function tests()
         type(test_list) :: tests
         tests = test_list([ &
-            test("Periodic BCs", test_periodic_bcs) &
+            test("Periodic BCs", test_periodic_bc) &
         ])
     end function tests
 
@@ -33,11 +33,11 @@ contains
     !> test_env_t is initialized to create grid and state objects with  <!
     !> the above defined conditions                                     <!
     !>------------------------------------------------------------------<!
-    subroutine test_periodic_bcs()
+    subroutine test_periodic_bc()
         type(test_env_t) :: test_env
         call test_env%initialize_env_small()
         call test_env%set_sine_wave()
-        call fill_ghost_cells_periodic(test_env%grid, test_env%state)
+        call fill_ghost_cells_periodic(test_env%grid, test_env%state%u)
 
         !! Check left hand side
         call check( test_env%state%u(1,0)  == test_env%state%u(1,test_env%grid%n_cells))
@@ -47,6 +47,6 @@ contains
         call check( test_env%state%u(1,test_env%grid%n_cells+1) == test_env%state%u(1,1) )
         call check( test_env%state%u(1,test_env%grid%n_cells+2) == test_env%state%u(1,2) )
 
-    end subroutine test_periodic_bcs
+    end subroutine test_periodic_bc
 
-end module test_unit_boundary_conditions
+end module test_unit_periodic_bc

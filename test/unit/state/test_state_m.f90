@@ -2,10 +2,10 @@
 !> Unit test module for state_m to excercise the state_t object           <!
 !>------------------------------------------------------------------------<!
 module test_unit_state
+    use test_state_fixtures_m
     use fortuno_serial, only : test => serial_case_item, check => serial_check, test_list, is_close, is_equal
     use kinds_m
     use state_m, only : state_t
-    use test_unit_fixtures
     implicit none
     private
     public :: tests

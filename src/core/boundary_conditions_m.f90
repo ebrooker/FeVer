@@ -9,10 +9,10 @@ module boundary_conditions_m
 
 
     abstract interface
-        subroutine bc_procedure_i(grid, state)
+        subroutine bc_procedure_i(grid, u)
             import :: rp, grid_t, state_t
             type(grid_t), intent(in) :: grid
-            type(state_t), intent(inout) :: state
+            real(rp), allocatable :: u(:,:)
         end subroutine
     end interface
 
@@ -31,34 +31,34 @@ contains
         end select
     end function select_boundary_condition
 
-    subroutine fill_ghost_cells_periodic(grid, state)
+    subroutine fill_ghost_cells_periodic(grid, u)
         type(grid_t), intent(in) :: grid
-        type(state_t), intent(inout) :: state
+        real(rp), allocatable :: u(:,:)
 
         integer :: i
 
         !! Fill ghost cells on LHS
         do i=1-grid%n_ghost,0
-            state%u(:,i) = state%u(:,grid%n_cells + i)
+            u(:,i) = u(:,grid%n_cells + i)
         end do
 
         !! Fill ghost cells on RHS
         do i = grid%n_cells + 1, grid%n_cells + grid%n_ghost
-            state%u(:,i) = state%u(:,i - grid%n_cells)
+            u(:,i) = u(:,i - grid%n_cells)
         end do
 
     end subroutine fill_ghost_cells_periodic
 
 
-    subroutine fill_ghost_cells_outflow(grid, state)
+    subroutine fill_ghost_cells_outflow(grid, u)
         type(grid_t), intent(in) :: grid
-        type(state_t), intent(inout) :: state
+        real(rp), allocatable :: u(:,:)
 
         !! Fill ghost cells on LHS with first real mesh point (i=1)
-        state%u(:,grid%ilo:0) = spread(state%u(:,1), dim=2, ncopies=grid%n_ghost)
+        u(:,grid%ilo:0) = spread(u(:,1), dim=2, ncopies=grid%n_ghost)
 
         !! Fill ghost cells on RHS with last real mesh point (i=n_cells)
-        state%u(:,grid%n_cells+1:) = spread(state%u(:,grid%n_cells), dim=2, ncopies=grid%n_ghost)
+        u(:,grid%n_cells+1:) = spread(u(:,grid%n_cells), dim=2, ncopies=grid%n_ghost)
 
     end subroutine fill_ghost_cells_outflow
 

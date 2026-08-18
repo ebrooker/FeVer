@@ -75,7 +75,7 @@ contains
         procedure(bc_procedure_i) :: fill_ghost_cells
         procedure(reconstruction_procedure_i) :: reconstruction
 
-        call fill_ghost_cells(grid, state)
+        call fill_ghost_cells(grid, state%u)
         state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * rhs(grid, state%u, a, reconstruction)
 
     end subroutine advance_forward_euler
@@ -88,19 +88,19 @@ contains
         procedure(rhs_procedure_i) :: rhs
         procedure(bc_procedure_i) :: fill_ghost_cells
         procedure(reconstruction_procedure_i) :: reconstruction
-        real(rp) :: u_init(state%n_vars,grid%n_cells)
+        real(rp), allocatable :: u_tmp(:,:)
 
-        call fill_ghost_cells(grid, state)
+        if (allocated(u_tmp)) deallocate(u_tmp)
+        allocate(u_tmp(state%n_vars, grid%ilo:grid%ihi))
 
-        !! Copy initial state
-        u_init(:,1:grid%n_cells) = state%u(:,1:grid%n_cells)
+        call fill_ghost_cells(grid, state%u)
         
         !! Compute half timestep
-        state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + 0.5 * dt * rhs(grid, state%u, a, reconstruction)
+        u_tmp(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + 0.5 * dt * rhs(grid, state%u, a, reconstruction)
 
         !! Finish timestep with fluxes from half dt solution and initial state copy
-        call fill_ghost_cells(grid, state)
-        state%u(:,1:grid%n_cells) = u_init(:,1:grid%n_cells) + dt * rhs(grid, state%u, a, reconstruction)
+        call fill_ghost_cells(grid, u_tmp)
+        state%u(:,1:grid%n_cells) = state%u(:,1:grid%n_cells) + dt * rhs(grid, u_tmp, a, reconstruction)
 
     end subroutine advance_rk2
 

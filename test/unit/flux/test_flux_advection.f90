@@ -3,7 +3,7 @@
 !> left/right states -- no grid, no reconstruction, no time integration   <!
 !> involved                                                               <!
 !>------------------------------------------------------------------------<!
-module test_unit_flux
+module test_unit_advection_flux
     use kinds_m, only: rp
     use fortuno_serial, only: test => serial_case_item, &
                               check => serial_check, test_list
@@ -105,4 +105,4 @@ contains
         call check(F(2) == a * uL(2))
     end subroutine test_upwind_flux_multivar_shape
 
-end module test_unit_flux
+end module test_unit_advection_flux
