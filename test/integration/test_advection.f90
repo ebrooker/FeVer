@@ -6,7 +6,7 @@
 !>------------------------------------------------------------------------------<!
 module test_integration_advection
     use kinds_m, only: rp, ip
-    use constants_m, only : pi2, epsilon
+    use constants_m, only : pi2, small
     use fortuno_serial, only: test => serial_case_item, &
                               check => serial_check, test_list
 
@@ -14,7 +14,8 @@ module test_integration_advection
     use state_m, only: state_t
     use boundary_conditions_m, only : bc_procedure_i, select_boundary_condition
     use reconstruct_m, only : select_reconstruction_method, reconstruction_procedure_i
-    use time_integration_m, only: compute_dt, select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
+    use time_integration_m, only: select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
+    use timestep_m, only: compute_dt
     implicit none
     private
     public :: tests
@@ -83,8 +84,8 @@ module test_integration_advection
         
         ! should 
         call check(all( &
-                  state%u(1,1:4) >= expected - epsilon &
-            .and. state%u(1,1:4) <= expected + epsilon &
+                  state%u(1,1:4) >= expected - small &
+            .and. state%u(1,1:4) <= expected + small &
         ))
     end subroutine test_single_step_hand_computed
 

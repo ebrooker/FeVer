@@ -9,9 +9,10 @@ module test_convergence_advection
     use constants_m, only : pi2
     use grid_m, only: grid_t
     use state_m, only: state_t
-    use boundary_conditions_m, only : bc_procedure_i, select_boundary_condition
-    use reconstruct_m, only : select_reconstruction_method, reconstruction_procedure_i
-    use time_integration_m, only: compute_dt, select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
+    use boundary_conditions_m, only: bc_procedure_i, select_boundary_condition
+    use reconstruct_m, only: select_reconstruction_method, reconstruction_procedure_i
+    use time_integration_m, only: select_integrator_method, integrator_procedure_i, rhs_procedure_i, select_rhs_method
+    use timestep_m, only: compute_dt
     use fortuno_serial, only: test => serial_case_item, &
                               check => serial_check, test_list
     implicit none
@@ -111,7 +112,6 @@ contains
         ! scheme that's actually 0th- or 2nd-order due to a bug.
         do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
-            print *, observed_order
             call check(observed_order > 0.85_rp .and. observed_order < 1.15_rp)
         end do
     end subroutine test_convergence_rate_piecewise_constant
@@ -187,7 +187,6 @@ contains
         ! in mind that Forward Euler integration will weaken the order
         do r = 1,n_resolutions-1
             observed_order = log2(errors(r) / errors(r+1))
-            print *, observed_order
             call check(observed_order > 1.45_rp .and. observed_order < 1.70_rp)
         end do
     end subroutine test_convergence_rate_piecewise_linear_minmod
