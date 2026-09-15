@@ -5,6 +5,14 @@ author = "ebrooker"
 maintainer = "18298060+ebrooker@users.noreply.github.com"
 copyright = "Copyright 2025, ebrooker"
 
+[[executable]]
+name = "advection_driver"
+main = "main_advection.f90"
+
+[[executable]]
+name = "burgers_driver"
+main = "main_burgers.f90"
+
 [build]
 auto-executables = true
 auto-tests = true

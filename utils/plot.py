@@ -17,6 +17,7 @@ class Animator:
 
     def __plot(self, i):
         data = np.loadtxt(self.files[i], skiprows=1, delimiter=",")
+        _, = self.ax.plot(data[:,0], data[:,2])
         self.line, = self.ax.plot(data[:,0], data[:,2])
         mmin, mmax = data[:,2].min(), data[:,2].max()
         self.ax.set_ylim(mmin - 0.1*mmin, mmax + 0.1*mmax)
@@ -30,13 +31,32 @@ class Animator:
 
     def animate(self):
         anim = FuncAnimation(self.fig, self.__update, frames=len(self.files), interval=100)
-        anim.save("movies/fever_example.gif", writer=PillowWriter(fps=30))
+        return anim
 
-cwd = Path.cwd()
-data_dir = cwd / "data"
-data_files = sorted(list(data_dir.glob("fever_snp_*")))
-movie_dir = cwd / "movies"
-movie_dir.mkdir(exist_ok=True)
 
-animator = Animator(data_files)
-animator.animate()
+
+if __name__ == "__main__":
+    cwd = Path.cwd()
+    data_dir = cwd / "data"
+    movie_dir = cwd / "movies"
+    movie_dir.mkdir(exist_ok=True)
+
+    examples = ["advection", "burgers"]
+    examples = [ "burgers"]
+
+    for example in examples:
+        data_files = sorted(list(data_dir.glob(f"{example}_snp_*")))
+
+        animator = Animator(data_files)
+        animator.animate().save(f"movies/{example}.gif", writer=PillowWriter(fps=30))
+
+        plt.close('all')
+        init  = np.loadtxt(data_files[0], skiprows=1, delimiter=",")
+        final  = np.loadtxt(data_files[-1], skiprows=1, delimiter=",")
+        plt.plot(init[:,0], init[:,1], label="Initial")
+        plt.plot(final[:,0], final[:,1], label="Final")
+        plt.xlabel("x [cm]")
+        plt.ylabel("y [variable]")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f"plots/{example}.png", dpi=1024)

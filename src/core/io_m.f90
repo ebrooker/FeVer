@@ -35,7 +35,7 @@ contains
         do i = 1,grid%n_cells
             write(ounit, "(E16.8)", advance="no") grid%xc(i)
             do n = 1,state%n_vars
-                write(ounit,"(A,E16.8)",advance="no") ",", state%u(n,i)
+                write(ounit,"(A,E32.16)",advance="no") ",", state%u(n,i)
             end do
             write(ounit,*)
         end do

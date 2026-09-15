@@ -1,25 +1,3 @@
-module flux_m
-    use kinds_m, only : rp
-    implicit none
-    private
-    public :: upwind_flux_advection
-
-contains
-
-    pure function upwind_flux_advection(uL, uR, a) result(F)
-        real(rp), intent(in) :: uL(:), uR(:), a
-        real(rp) :: F(size(uL))
-        if (a > 0) then
-            F = a*uL
-        else if (a < 0) then
-            F = a*uR
-        else
-            F = 0.5_rp * (a) * (uL + uR)
-        end if
-    end function upwind_flux_advection
-end module flux_m
-
-
 module burgers_flux_m
     use kinds_m, only : rp
     implicit none
@@ -44,16 +22,18 @@ contains
             R = uR(n)
             S = 0.5_rp * (L + R)
 
-            if (L >= R) then
-                if (S >= 0.0_rp) then
+            if (L > R) then
+                !!> Shock case
+                if (S > 0.0_rp) then
                     U(n) = L
-                else
+                else if (S < 0.0_rp) then
                     U(n) = R
                 end if
             else
-                if (L >= 0.0_rp) then
+                !!> Rarefaction case
+                if (L > 0.0_rp) then
                     U(n) = L
-                else if (R <= 0.0_rp) then
+                else if (R < 0.0_rp) then
                     U(n) = R
                 else
                     U = 0.0_rp
