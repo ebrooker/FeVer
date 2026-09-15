@@ -9,7 +9,7 @@ program testapp_unit
     use test_unit_initial_conditions, only: ic_tests => tests
     use test_unit_reconstruct, only: reconstruct_tests => tests
     use test_unit_state, only : state_tests => tests
-    use test_unit_time_integration, only: time_integration_tests => tests
+    use test_unit_timestep, only: timestep_tests => tests
     use fortuno_serial, only: execute_serial_cmd_app, test_list, suite => serial_suite_item
     implicit none
 
@@ -20,7 +20,7 @@ program testapp_unit
             ic_tests(), &
             reconstruct_tests(), &
             state_tests(), &
-            time_integration_tests(), &
+            timestep_tests(), &
             bc_unit_tests(), &
             flux_unit_tests() &
         ]) &
