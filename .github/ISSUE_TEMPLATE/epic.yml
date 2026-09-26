@@ -1,0 +1,69 @@
+name: Epic
+description: A Release-level epic (e.g. F0–F10 in Foundation) — a cohesive piece of infrastructure or physics, broken down into sub-issues.
+title: "[Epic] "
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Epic-level issue. Break this down into sub-issues using GitHub's native
+        sub-issue feature (not just a checklist), so the parent's progress bar
+        updates automatically as sub-issues close.
+
+  - type: input
+    id: release
+    attributes:
+      label: Release / Milestone
+      description: e.g. "Release 1 — Foundation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One or two sentences — what does this epic prove or deliver?
+    validations:
+      required: true
+
+  - type: textarea
+    id: in-scope
+    attributes:
+      label: In scope
+      description: Bullet list. Each bullet is a candidate sub-issue.
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this epic deliberately does not cover (and which future epic/release owns it instead).
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checkbox list. Each one should map to at least one sub-issue below.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+
+  - type: input
+    id: depends-on
+    attributes:
+      label: Depends on
+      description: Other epics this one is blocked by (e.g. "F0"). Encode with `gh issue edit --add-blocked-by` as well.
+
+  - type: textarea
+    id: sub-issues
+    attributes:
+      label: Sub-issues
+      description: Link sub-issues here as they're created (GitHub also tracks this natively via the sub-issues panel).
+      placeholder: |
+        - [ ] #
+        - [ ] #
