@@ -1,6 +1,6 @@
 name: Task
 description: A single, independently-mergeable unit of work under an Epic.
-title: ""
+title: "[Task] "
 labels: ["task"]
 body:
   - type: input
