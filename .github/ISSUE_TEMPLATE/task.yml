@@ -1,0 +1,42 @@
+name: Task
+description: A single, independently-mergeable unit of work under an Epic.
+title: ""
+labels: ["task"]
+body:
+  - type: input
+    id: epic
+    attributes:
+      label: Parent epic
+      description: e.g. "F0 — Physics Module Registry" (also attach via GitHub's native sub-issue link)
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: What does this task deliver? Keep it to one clear, independently-mergeable increment. If you can't describe "done" in one sentence, split this into two tasks.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: Checkbox list — how do you know this is finished? Pull directly from the epic's acceptance criteria where this task satisfies one.
+      value: |
+        - [ ] 
+    validations:
+      required: true
+
+  - type: input
+    id: blocked-by
+    attributes:
+      label: Blocked by
+      description: Other sub-issues this depends on (e.g. "F0.2"). Encode with `gh issue edit --add-blocked-by` too, so it shows natively.
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / gotchas
+      description: Anything non-obvious a reviewer or future-you should know.
